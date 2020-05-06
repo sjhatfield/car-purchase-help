@@ -1,5 +1,6 @@
 from sklearn.model_selection import train_test_split, GroupShuffleSplit
 import pandas as pd
+from ml_editor import constants
 
 
 def format_raw_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -36,8 +37,8 @@ def format_raw_df(df: pd.DataFrame) -> pd.DataFrame:
 def split_by_description(
     formatted_df: pd.DataFrame,
     description_column: str = "description",
-    test_size: float = 0.2,
-    random_state: int = 3142,
+    test_size: float = constants.TEST_PROPORTION,
+    random_state: int = constants.RANDOM_STATE,
 ) -> (pd.DataFrame, pd.DataFrame):
     """
     Splits the dataframe into a training set and testing set. Keeps rows
