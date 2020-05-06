@@ -27,7 +27,6 @@ def format_raw_df(df: pd.DataFrame) -> pd.DataFrame:
     df.set_index("id", inplace=True, drop=True)
 
     # Limiting the range of the numerical columns to remove clear outliers
-    df = df[(df["price"] > 0) & (df["price"] < 100000)]
     df = df[(df["year"] > 1980) & (df["year"] < 2020)]
     df = df[(df["odometer"] > 1000) & (df["odometer"] < 300000)]
 
@@ -55,3 +54,14 @@ def split_by_description(
     splits = splitter.split(formatted_df, groups=formatted_df[description_column])
     train_idx, test_idx = next(splits)
     return formatted_df.iloc[train_idx, :], formatted_df.iloc[test_idx, :]
+
+
+def remove_outliers(df: pd.DataFrame, column: str = "price"):
+    """
+    Removes outliers from the provided column of the dataframe. Outliers
+    are values that are outside 3 standard deviations of the  mean of the column
+    :param df: dataframe assumed to be clean and formatted
+    :param column: column to remove the outliers from. Usually this will be price
+    :return: the same dataframe with rows removed which contain an outlier for the provided column
+    """
+    return df[((df[column] - df[column].mean()) / df[column].std()).abs() < 3]

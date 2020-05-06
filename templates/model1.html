@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title>ML Editor</title>
+</head>
+
+<body>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+
+    <h1>Welcome to the ML Editor!</h1>
+    <h2>Version 1: Mileage based decision</h2>
+    <p>
+        This version of the Car Purchase Helper outputs a decision based on
+        whether the listed price compared to the make, model, year and
+        mileage seems like a good deal or not.
+    </p>
+    <form action="" method="post">
+        <div class="form-group">
+            <label for="question">Please enter: manufacturer, model, year, mileage, listed price. Separated by
+                commas</label>
+            <textarea class="form-control" rows="5" name="question"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Get recommendation</button>
+        <a href="/" class="btn btn-primary">Back to main page</a>
+    </form>
+    <p>
+        Here are the models available: mountaineer, outback, sonata, g35, yukon,
+        model s, traverse, 124 spider lusso, xc90, sportage, accord lx-s coupe 2d,
+        335, edge, frontier, beetle, tl, town car, grand prix, 200, ats, liberty
+    </p>
+
+</body>
+
+</html>

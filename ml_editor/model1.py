@@ -1,15 +1,12 @@
-import os
 from os import path
-from pathlib import Path
 from sklearn.linear_model import LinearRegression
-from ml_editor.utils import clean_input
+from ml_editor.utils import clean_input, format_user_input
+from ml_editor.data_visualization import save_lin_reg_plot
+from ml_editor.data_processing import remove_outliers
 import joblib
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 from ml_editor import constants
-
-plt.style.use(constants.MATPLOTLIB_STYLE)
 
 
 def fit_lin_regression(
@@ -37,7 +34,10 @@ def fit_lin_regression(
         (df["manufacturer"] == manufacturer)
         & (df["model"] == model)
         & (df["year"] == year)
-    ][["odometer", "price"]]
+    ]
+
+    # Remove rows that contain outliers in the price column
+    data = remove_outliers(data)
 
     # Check if there are enough data points to justify a regression to be fit
     if len(data) < constants.MIN_POINTS_TO_FIT:
@@ -50,51 +50,11 @@ def fit_lin_regression(
     y = data["price"].values.reshape(len(data), 1)
     linreg = LinearRegression()
     linreg.fit(X=X, y=y)
+    y_preds = linreg.predict(np.sort(X, axis=0))
 
     # Save a scatter plot of the data and the regression line
-    fig, ax = plt.subplots(figsize=(12, 8), dpi=300)
-    ax.set_title(f"{manufacturer}, {model} from {year}")
-    ax.set_xlabel("Mileage")
-    ax.set_ylabel("Price")
-    ax.scatter(X, y)
-    y_preds = linreg.predict(np.sort(X, axis=0))
-    ax.plot(np.sort(X, axis=0), y_preds)
-    ax.plot(
-        np.sort(X, axis=0),
-        y_preds - np.mean(abs(y_preds - y)),
-        label="Good deal",
-        ls="--",
-        lw=0.7,
-        c="green",
-    )
-    ax.plot(
-        np.sort(X, axis=0),
-        y_preds - 2 * np.mean(abs(y_preds - y)),
-        label="Very good deal",
-        ls="--",
-        lw=0.7,
-        c="darkgreen",
-    )
-    ax.plot(
-        np.sort(X, axis=0),
-        y_preds + np.mean(abs(y_preds - y)),
-        label="Bad deal",
-        ls="--",
-        lw=0.7,
-        c="red",
-    )
-    ax.plot(
-        np.sort(X, axis=0),
-        y_preds + 2 * np.mean(abs(y_preds - y)),
-        label="Very bad deal",
-        ls="--",
-        lw=0.7,
-        c="darkred",
-    )
-    ax.legend()
+    save_lin_reg_plot(manufacturer, model, year, X, y, y_preds)
 
-    # Save both the plot and the pkl file
-    fig.savefig(f"../models/images/{manufacturer}_{model}_{year}.png")
     joblib.dump(linreg, f"../models/{manufacturer}_{model}_{year}.pkl")
 
     return "Regression fit and saved successfully"
@@ -138,3 +98,27 @@ def predict_price(
             return "Prediciton was below zero"
     else:
         return "Prediction failed"
+
+
+def get_advice(
+    predicted_price: float, listed_price: float, mean_absolute_residual: float
+) -> str:
+    """
+    Takes the difference between the price predicted for the vehicle and the listed price
+    and gives a recommendation compared to the mean absolute residual for the model
+    :param predicted_price: the price the model predicted for the vehicle
+    :param listed_price: the price the vehicle is listed for on the internet
+    :param mean_absolute_residual: average distance from training data to the regression line
+    :return: a text recommendation to be provided to the user
+    """
+    factor = (predicted_price - listed_price) / mean_absolute_residual
+    if factor > 2:
+        return "This appears to be a very good deal"
+    elif 1 < factor <= 2:
+        return "This appears to be a good deal"
+    elif abs(factor) <= 1:
+        return "This appears to be a fair price for the car"
+    elif -2 <= factor < -1:
+        return "This appears to be a bad deal"
+    else:
+        return "This appears to be a very bad deal"
