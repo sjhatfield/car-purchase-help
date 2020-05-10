@@ -25,7 +25,7 @@ def save_lin_reg_plot(
     :param y: array of price values for the plot
     :param y_preds: predicitons for the odometer values from the regression
     """
-    fig, ax = plt.subplots(figsize=(8, 6), dpi=200)
+    fig, ax = plt.subplots(figsize=(8, 6), dpi=100)
     ax.set_title(f"{manufacturer}, {model} from {year}")
     ax.set_xlabel("Mileage")
     ax.set_ylabel("Price")
@@ -67,8 +67,8 @@ def save_lin_reg_plot(
         c="darkred",
     )
     ax.legend()
-    file_name = f"../models/images/{manufacturer}_{model}_{year}.pkl"
-    fig.savefig(format_file_name(file_name), bbox_inches="tight")
+    file_name = f"../models/images/{manufacturer}_{model}_{year}.png"
+    fig.savefig(file_name, bbox_inches="tight")
 
     # Attempt to properly close the figure and garbage collect as memory usage accumulating
     # as all the models are trained
