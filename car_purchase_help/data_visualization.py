@@ -1,8 +1,8 @@
 import gc
+from car_purchase_help import constants
+from car_purchase_help.utils import format_file_name
 import numpy as np
 import matplotlib.pyplot as plt
-from ml_editor import constants
-from ml_editor.utils import format_file_name
 
 plt.style.use(constants.MATPLOTLIB_STYLE)
 
