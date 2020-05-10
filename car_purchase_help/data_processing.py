@@ -30,6 +30,7 @@ def format_raw_df(df: pd.DataFrame) -> pd.DataFrame:
     # Limiting the range of the numerical columns to remove clear outliers
     df = df[(df["year"] > 1980) & (df["year"] < 2020)]
     df = df[(df["odometer"] > 1000) & (df["odometer"] < 300000)]
+    df = df[df["price"] >= 500]
 
     return df
 
@@ -57,7 +58,7 @@ def split_by_description(
     return formatted_df.iloc[train_idx, :], formatted_df.iloc[test_idx, :]
 
 
-def remove_outliers(df: pd.DataFrame, column: str = "price"):
+def remove_outliers(df: pd.DataFrame, column: str = "price", mode: str = "IQR"):
     """
     Removes outliers from the provided column of the dataframe. Outliers
     are values that are outside 3 standard deviations of the mean of the column
@@ -65,4 +66,15 @@ def remove_outliers(df: pd.DataFrame, column: str = "price"):
     :param column: column to remove the outliers from. Usually this will be price
     :return: the same dataframe with rows removed which contain an outlier for the provided column
     """
-    return df[((df[column] - df[column].mean()) / df[column].std()).abs() < 3]
+    mode = mode.upper()
+    assert mode in ["IQR", "SD"], (
+        "mode is either IQR for outside 1.5 IQR method"
+        " or SD for outside 3 standard deviations from the mean method"
+    )
+    if mode == "SD":
+        return df[((df[column] - df[column].mean()) / df[column].std()).abs() < 3]
+    else:
+        Q3 = df[column].quantile(0.75)
+        Q1 = df[column].quantile(0.25)
+        IQR = Q3 - Q1
+        return df[(df[column] < Q3 + 1.5 * IQR) & (df[column] > Q1 - 1.5 * IQR)]
