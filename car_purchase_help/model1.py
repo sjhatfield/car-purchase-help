@@ -1,4 +1,4 @@
-from os import path, getcwd, listdir
+from os import path
 from pathlib import Path
 import pickle
 from car_purchase_help.utils import clean_input, format_user_input, format_file_name
@@ -24,15 +24,17 @@ def fit_lin_regression(
     :return: string indicating the status of the training
     """
 
+    # Clean the input details and check whether a pkl file already exists for
+    # the car
     manufacturer, model, year, _ = clean_input(manufacturer, model, year, 1000)
     model_file = Path(f"../models/{manufacturer}_{model}_{year}.pkl")
-
     if model_file.exists():
         return (
             "There is already a saved model for this vehicle, "
             "delete the pkl file if refitting necessary"
         )
-    # Get the data for the vehicle given year
+
+    # Get the data for the vehicle given year from the dataframe
     data = df[
         (df["manufacturer"] == manufacturer)
         & (df["model"] == model)
@@ -54,12 +56,12 @@ def fit_lin_regression(
     linreg = Linear_Regression()
     linreg.fit(X, y)
 
-    # Save a scatter plot of the data and the regression line
-    # TAKES TOO MUCH MEMORY
+    # Save a scatter plot of the data and the regression line TAKES TOO MUCH MEMORY CURRENTLY
     # save_lin_reg_plot(manufacturer, model, year, X, y, y_preds)
+
+    # Save the linear regression object by pickling the binary
     with open(model_file, "wb") as f:
         pickle.dump(linreg, f)
-
     return "Regression fit and saved successfully"
 
 
@@ -75,16 +77,19 @@ def predict_price(manufacturer: str, model: str, year: float, odometer: float):
     if not enough data return -1, if regression fails -2, 
     """
 
+    # Clean the input from the user and check that a pkl file exists
     manufacturer, model, year, odometer = clean_input(
         manufacturer, model, year, odometer
     )
-    print(listdir(Path("models")))
     model_file = Path(f"models/{manufacturer}_{model}_{year}.pkl")
-    # assert path.isfile(model_file), "No regression model for this car from that year"
+    assert path.isfile(model_file), "No regression model for this car from that year"
+
+    # Load the linear regression model from memory and make the prediciton
     with open(model_file, "rb") as f:
         linreg = pickle.load(f)
     prediction = linreg.predict(x=odometer)
 
+    # Check the prediction returned a value and return it
     assert prediction != None, "Prediction failed"
     return max(prediction, 0), linreg.get_mean_absolute_residual()
 
@@ -100,6 +105,11 @@ def get_advice(
     :param mean_absolute_residual: average distance from training data to the regression line
     :return: a text recommendation to be provided to the user
     """
+    # The factor is how many RESIDUAL_FACTOR_DIFFs the prediction is above or
+    # below the linear regression prediction at that point.
+    # eg if listing is for 1,000 and the model predicts 2,000 and the
+    # mean absolute residual is 500 then the price is 2 RESIDUAL_FACTOR_DIFFs
+    # below the price. So this seems like a good deal.
     factor = (predicted_price - listed_price) / mean_absolute_residual
     if factor > 2 * constants.RESIDUAL_FACTOR_DIFF:
         return "This appears to be a very good deal"
