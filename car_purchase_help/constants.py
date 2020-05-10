@@ -1,5 +1,3 @@
-from pathlib import Path
-
 MATPLOTLIB_STYLE = "fivethirtyeight"
 MIN_POINTS_TO_FIT = 30
 RANDOM_STATE = 3142
