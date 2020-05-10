@@ -1,6 +1,7 @@
+from car_purchase_help import constants
+
 from sklearn.model_selection import train_test_split, GroupShuffleSplit
 import pandas as pd
-from ml_editor import constants
 
 
 def format_raw_df(df: pd.DataFrame) -> pd.DataFrame:

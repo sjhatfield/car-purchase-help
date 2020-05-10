@@ -1,12 +1,13 @@
-from os import path
-from sklearn.linear_model import LinearRegression
-from ml_editor.utils import clean_input, format_user_input, format_file_name
-from ml_editor.data_visualization import save_lin_reg_plot
-from ml_editor.data_processing import remove_outliers
-import joblib
+from os import path, getcwd, listdir
+from pathlib import Path
+import pickle
+from car_purchase_help.utils import clean_input, format_user_input, format_file_name
+from car_purchase_help.data_visualization import save_lin_reg_plot
+from car_purchase_help.data_processing import remove_outliers
+from car_purchase_help import constants
+from car_purchase_help.linear_regression import Linear_Regression
 import pandas as pd
 import numpy as np
-from ml_editor import constants
 
 
 def fit_lin_regression(
@@ -23,8 +24,10 @@ def fit_lin_regression(
     :return: string indicating the status of the training
     """
 
-    # manufacturer, model, year, _ = clean_input(manufacturer, model, year, 1000)
-    if path.exists(f"../models/{manufacturer}_{model}_{year}.pkl"):
+    manufacturer, model, year, _ = clean_input(manufacturer, model, year, 1000)
+    model_file = Path(f"../models/{manufacturer}_{model}_{year}.pkl")
+
+    if model_file.exists():
         return (
             "There is already a saved model for this vehicle, "
             "delete the pkl file if refitting necessary"
@@ -48,22 +51,19 @@ def fit_lin_regression(
     # Format, then fit the regression
     X = data["odometer"].values.reshape(len(data), 1)
     y = data["price"].values.reshape(len(data), 1)
-    linreg = LinearRegression()
-    linreg.fit(X=X, y=y)
-    y_preds = linreg.predict(np.sort(X, axis=0))
+    linreg = Linear_Regression()
+    linreg.fit(X, y)
 
     # Save a scatter plot of the data and the regression line
     # TAKES TOO MUCH MEMORY
     # save_lin_reg_plot(manufacturer, model, year, X, y, y_preds)
-    file_name = f"../models/{manufacturer}_{model}_{year}.pkl"
-    joblib.dump(linreg, format_file_name(file_name))
+    with open(model_file, "wb") as f:
+        pickle.dump(linreg, f)
 
     return "Regression fit and saved successfully"
 
 
-def predict_price(
-    df: pd.DataFrame, manufacturer: str, model: str, year: float, odometer: float
-):
+def predict_price(manufacturer: str, model: str, year: float, odometer: float):
     """
     Given a car from a certain year and mileage this returns the typical (according
     to linear regression) value it would be listed for on Craigslist
@@ -76,24 +76,17 @@ def predict_price(
     """
 
     manufacturer, model, year, odometer = clean_input(
-        df, manufacturer, model, year, odometer
+        manufacturer, model, year, odometer
     )
-    assert path.exists(
-        f"../models/{manufacturer}_{model}_{year}.pkl"
-    ), "No model for this car from that year"
-    data = df[
-        (df["manufacturer"] == manufacturer)
-        & (df["model"] == model)
-        & (df["year"] == year)
-    ][["odometer", "price"]]
-    X = data["odometer"].values.reshape(len(data), 1)
-    y = data["price"].values.reshape(len(data), 1)
-    linreg = joblib.load(f"../models/{manufacturer}_{model}_{year}.pkl")
-    prediction = linreg.predict(X=[[odometer]])
-    y_preds = linreg.predict(X=X)
+    print(listdir(Path("models")))
+    model_file = Path(f"models/{manufacturer}_{model}_{year}.pkl")
+    # assert path.isfile(model_file), "No regression model for this car from that year"
+    with open(model_file, "rb") as f:
+        linreg = pickle.load(f)
+    prediction = linreg.predict(x=odometer)
 
-    assert prediction != None, "Prediciton failed"
-    return max(prediction[0][0], 0), np.mean(abs(y_preds - y))
+    assert prediction != None, "Prediction failed"
+    return max(prediction, 0), linreg.get_mean_absolute_residual()
 
 
 def get_advice(
@@ -108,13 +101,21 @@ def get_advice(
     :return: a text recommendation to be provided to the user
     """
     factor = (predicted_price - listed_price) / mean_absolute_residual
-    if factor > 2:
+    if factor > 2 * constants.RESIDUAL_FACTOR_DIFF:
         return "This appears to be a very good deal"
-    elif 1 < factor <= 2:
+    elif (
+        1 * constants.RESIDUAL_FACTOR_DIFF
+        < factor
+        <= 2 * constants.RESIDUAL_FACTOR_DIFF
+    ):
         return "This appears to be a good deal"
-    elif abs(factor) <= 1:
+    elif abs(factor) <= 1 * constants.RESIDUAL_FACTOR_DIFF:
         return "This appears to be a fair price for the car"
-    elif -2 <= factor < -1:
+    elif (
+        -2 * constants.RESIDUAL_FACTOR_DIFF
+        <= factor
+        < -1 * constants.RESIDUAL_FACTOR_DIFF
+    ):
         return "This appears to be a bad deal"
     else:
         return "This appears to be a very bad deal"

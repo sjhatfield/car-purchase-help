@@ -1,5 +1,5 @@
 import pandas as pd
-from ml_editor import constants
+from car_purchase_help import constants
 
 
 def clean_input(
@@ -15,7 +15,7 @@ def clean_input(
     :return: cleaned and verified details that the user entered
     """
     manufacturer = manufacturer.strip().lower()
-    model = model.strip().lower()
+    model = model.strip().lower().replace("/", "").replace("\\", "")
     year = int(year)
     odometer = int(odometer)
 
