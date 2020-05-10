@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-    <title>ML Editor</title>
+    <title>Used Car Purchase Helper</title>
 </head>
 
 <body>
@@ -24,27 +24,23 @@
         crossorigin="anonymous"></script>
 
 
-    <h1>Welcome to the ML Editor!</h1>
-    <h2>Version 1: Mileage based decision</h2>
-    <p>
-        This version of the Car Purchase Helper outputs a decision based on
-        whether the listed price compared to the make, model, year and
-        mileage seems like a good deal or not.
-    </p>
+    <h1>Welcome to the Used Car Purchase Helper</h1>
+    <h2>Version 1: Mileage based recommendation</h2>
+    <p> This version of the helper takes in the make, model, year, mileage and
+        the price of the vehicle you have found for sale. It then tells you whether
+        this seems to be a good deal based on other vehicles for sale with the
+        same details. It does this by a linear regression and comparing the price with
+        the mean absolute residual in the regression.</p>
     <form action="" method="post">
         <div class="form-group">
-            <label for="question">Please enter: manufacturer, model, year, mileage, listed price. Separated by
-                commas</label>
-            <textarea class="form-control" rows="5" name="question"></textarea>
+            <label for="car_info">Please give the details of the car as "manufacturer", "model", "year",
+                "mileage", "advertised price". Comma separated without the quotation marks. For example: <i>honda,
+                    civic, 2013, 30000, 4000</i></label>
+            <textarea class="form-control" rows="1" name="car_info"></textarea>
         </div>
-        <button type="submit" class="btn btn-primary">Get recommendation</button>
+        <button type="submit" class="btn btn-primary">Get advice</button>
         <a href="/" class="btn btn-primary">Back to main page</a>
     </form>
-    <p>
-        Here are the models available: mountaineer, outback, sonata, g35, yukon,
-        model s, traverse, 124 spider lusso, xc90, sportage, accord lx-s coupe 2d,
-        335, edge, frontier, beetle, tl, town car, grand prix, 200, ats, liberty
-    </p>
 
 </body>
 
