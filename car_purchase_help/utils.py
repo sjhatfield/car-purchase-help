@@ -38,6 +38,13 @@ def format_user_input(text: str) -> (str, str, int, int, int):
     :return: tuple of cleaned manufacturer, model, year, mileage, listed price
     """
     text = text.split(",")
+    assert len(text) == 5, (
+        "Incorrect number of features provided. Should be 5 split by commas:"
+        " manufacturer, model, year, mileage, listed price"
+    )
+    for t in text:
+        assert len(t.strip()) > 0, "One of your fields is blank"
+
     return (
         text[0],
         text[1],
