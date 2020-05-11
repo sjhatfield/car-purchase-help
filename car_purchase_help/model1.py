@@ -11,7 +11,11 @@ import numpy as np
 
 
 def fit_lin_regression(
-    df: pd.DataFrame, manufacturer: str, model: str, year: float
+    df: pd.DataFrame,
+    manufacturer: str,
+    model: str,
+    year: float,
+    save_plots: bool = False,
 ) -> str:
     """
     Given a car from a certain year fits a linear regression for milage
@@ -57,7 +61,8 @@ def fit_lin_regression(
     linreg.fit(X, y)
 
     # Save a scatter plot of the data and the regression line TAKES TOO MUCH MEMORY CURRENTLY
-    # save_lin_reg_plot(manufacturer, model, year, X, y, y_preds)
+    if save_plots:
+        save_lin_reg_plot(manufacturer, model, year, X, y, linreg.get_y_preds())
 
     # Save the linear regression object by pickling the binary
     with open(model_file, "wb") as f:
@@ -81,10 +86,10 @@ def predict_price(manufacturer: str, model: str, year: float, odometer: float):
     manufacturer, model, year, odometer = clean_input(
         manufacturer, model, year, odometer
     )
-    model_file = Path(f"models/{manufacturer}_{model}_{year}.pkl")
+    model_file = Path(f"../models/{manufacturer}_{model}_{year}.pkl")
     assert path.isfile(model_file), "No regression model for this car from that year"
 
-    # Load the linear regression model from memory and make the prediciton
+    # Load the linear regression and make the prediction
     with open(model_file, "rb") as f:
         linreg = pickle.load(f)
     prediction = linreg.predict(x=odometer)
