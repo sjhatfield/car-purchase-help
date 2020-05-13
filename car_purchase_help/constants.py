@@ -49,3 +49,4 @@ MANUFACTURERS = [
     "hennessey",
 ]
 YEARS = [x for x in range(1981, 2019)]
+MILEAGE_DECREASE_PERIOD = 10000
