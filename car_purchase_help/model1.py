@@ -86,7 +86,7 @@ def predict_price(manufacturer: str, model: str, year: float, odometer: float):
     manufacturer, model, year, odometer = clean_input(
         manufacturer, model, year, odometer
     )
-    model_file = Path(f"../models/{manufacturer}_{model}_{year}.pkl")
+    model_file = Path(f"models/{manufacturer}_{model}_{year}.pkl")
     assert path.isfile(model_file), "No regression model for this car from that year"
 
     # Load the linear regression and make the prediction
@@ -117,20 +117,20 @@ def get_advice(
     # below the price. So this seems like a good deal.
     factor = (predicted_price - listed_price) / mean_absolute_residual
     if factor > 2 * constants.RESIDUAL_FACTOR_DIFF:
-        return "This appears to be a very good deal"
+        return "This appears to be a <b>very good</b> deal."
     elif (
         1 * constants.RESIDUAL_FACTOR_DIFF
         < factor
         <= 2 * constants.RESIDUAL_FACTOR_DIFF
     ):
-        return "This appears to be a good deal"
+        return "This appears to be a <b>good</b> deal."
     elif abs(factor) <= 1 * constants.RESIDUAL_FACTOR_DIFF:
-        return "This appears to be a fair price for the car"
+        return "This appears to be a <b>fair price for the car"
     elif (
         -2 * constants.RESIDUAL_FACTOR_DIFF
         <= factor
         < -1 * constants.RESIDUAL_FACTOR_DIFF
     ):
-        return "This appears to be a bad deal"
+        return "This appears to be a <b>bad</b> deal."
     else:
-        return "This appears to be a very bad deal"
+        return "This appears to be a <b>very bad</b> deal."
