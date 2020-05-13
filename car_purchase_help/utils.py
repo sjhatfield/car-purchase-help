@@ -46,8 +46,8 @@ def format_user_input(text: str) -> (str, str, int, int, int):
         assert len(t.strip()) > 0, "One of your fields is blank"
 
     return (
-        text[0],
-        text[1],
+        text[0].strip(),
+        text[1].strip(),
         int(text[2].strip()),
         int(text[3].strip()),
         int(text[4].strip()),
