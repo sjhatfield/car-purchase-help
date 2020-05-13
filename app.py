@@ -3,6 +3,8 @@ from functools import lru_cache
 from flask import Flask, render_template, request
 
 import car_purchase_help.model1 as model_1
+import car_purchase_help.model2 as model_2
+import car_purchase_help.model3 as model_3
 from car_purchase_help.utils import format_user_input, clean_input
 
 app = Flask(__name__)
@@ -24,6 +26,22 @@ def model1():
     return handle_request(request, "model1.html")
 
 
+@app.route("/model2", methods=["POST", "GET"])
+def model2():
+    """
+    Renders model2 input form and results
+    """
+    return handle_request(request, "model2.html")
+
+
+@app.route("/model3", methods=["POST", "GET"])
+def model3():
+    """
+    Renders model3 input form and results
+    """
+    return handle_request(request, "model3.html")
+
+
 def get_model_from_template(template_name):
     """
     Get the name of the relevant model from the name of the template
@@ -34,7 +52,7 @@ def get_model_from_template(template_name):
 
 
 @lru_cache(maxsize=128)
-def retrieve_advice_from_model(user_raw_text, model):
+def retrieve_advice_from_model(user_raw_text, model_page):
     """
     This function computes or retrieves advice
     We use an LRU cache to store results we process. If we see the same car details
@@ -43,22 +61,26 @@ def retrieve_advice_from_model(user_raw_text, model):
     :param model: which model to use
     :return: a model's recommendations
     """
-    if model == "model1":
-        # Get the car details from the raw text that the user entered
-        manufacturer, model, year, odometer, listed_price = format_user_input(
-            user_raw_text
-        )
-        print(
-            f"formatted user input: {manufacturer}, {model}, {year}, {odometer}, {listed_price}"
-        )
-        predicted_price, mean_absolute_residual = model_1.predict_price(
-            manufacturer, model, year, odometer
-        )
-        print(
-            f"Predicted price and residual {predicted_price}, {mean_absolute_residual}"
-        )
-        # Return the advice given the prediciton and listed price
-        return model_1.get_advice(predicted_price, listed_price, mean_absolute_residual)
+
+    manufacturer, model, year, odometer, listed_price = format_user_input(user_raw_text)
+    predicted_price, mean_absolute_residual = model_1.predict_price(
+        manufacturer, model, year, odometer
+    )
+    model1_advice = model_1.get_advice(
+        predicted_price, listed_price, mean_absolute_residual
+    )
+
+    if model_page == "model1":
+        return model1_advice
+
+    mileage_decrease = model_2.predict_mileage_cost(manufacturer, model, year)
+
+    if model_page == "model2":
+        return f"{model1_advice} {mileage_decrease}"
+
+    if model_page == "model3":
+        similar_advice = model_3.get_similar_advice(manufacturer, model, year, odometer)
+        return f"{model1_advice} {mileage_decrease}\n{similar_advice}"
 
     raise ValueError("Incorrect Model passed")
 
