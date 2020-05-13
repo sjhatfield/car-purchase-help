@@ -2,6 +2,7 @@ from car_purchase_help import constants
 
 from sklearn.model_selection import train_test_split, GroupShuffleSplit
 import pandas as pd
+from collections import defaultdict
 
 
 def format_raw_df(df: pd.DataFrame) -> pd.DataFrame:
@@ -78,3 +79,77 @@ def remove_outliers(df: pd.DataFrame, column: str = "price", mode: str = "IQR"):
         Q1 = df[column].quantile(0.25)
         IQR = Q3 - Q1
         return df[(df[column] < Q3 + 1.5 * IQR) & (df[column] > Q1 - 1.5 * IQR)]
+
+
+def find_manufacturer(car_text: str, manufacturer_list: list):
+    """
+    :param car_text: string of car make and model information of the form `make-model` where
+        make may contain hyphes or spaces.
+    :param manfucaturer_list: list containing the manufacturers to check
+    :return: if the car has manufacturer in the list then returns the 
+        manufacturer, else returns None
+    """
+    split = car_text.split("-")
+    possible_manufacturer_space = split[0]
+    possible_manufacturer_hyphen = split[0]
+    for chunk in split[1:]:
+        if possible_manufacturer_space in manufacturer_list:
+            return possible_manufacturer_space
+        if possible_manufacturer_hyphen in manufacturer_list:
+            return possible_manufacturer_hyphen
+        possible_manufacturer_space = (
+            possible_manufacturer_space + " " + possible_manufacturer_space
+        )
+        possible_manufacturer_hyphen = (
+            possible_manufacturer_hyphen + "-" + possible_manufacturer_hyphen
+        )
+    return None
+
+
+def find_model(car_text: str, model_list: list):
+    """
+    :param car_text: string of car make and model information of the form `make-model` where
+        make may contain hyphes or spaces.
+    :param model_list: list containing all the models in the Craiglist dataset
+    :return: if the model is in the list return it's text
+        properly formatted, else return None
+    """
+    split = car_text.split("-")
+    possible_model_space = split[-1]
+    possible_model_hyphen = split[-1]
+    for chunk in split[-2::-1]:
+        if possible_model_space in model_list:
+            return possible_model_space
+        if possible_model_hyphen in model_list:
+            return possible_model_hyphen
+        possible_model_hyphen = chunk + " " + possible_model_hyphen
+        possible_model_hyphen = chunk + "-" + possible_model_hyphen
+    return None
+
+
+def clean_similar_cars_dict(similar_cars: dict, df: pd.DataFrame):
+    """
+    Takes the dictionary of similar cars and from the list of similar cars removes
+    any which are not in the Craiglist dataset.
+    :param similar_cars: This is dictionary where the keys are strings of the form
+        `make,model` and the values are sets of strings of similar cars. The similar 
+        car strings are of the form `make-model` where the make and model can contain
+        hyphens also.
+    :param df: the dataframe of Craiglist data
+    :return: dictionary of similar cars where the only car in the value lists are actually
+        present in the original dataframe. And the names are formatted as `make,model`
+    """
+    manufacturer_list = df["manufacturer"].unique()
+    model_list = df["model"].unique()
+    similar_cars_clean = defaultdict(set)
+    print(type(similar_cars))
+    for key, similar_set in similar_cars.items():
+        for car in similar_set:
+            manufacturer = find_manufacturer(car, manufacturer_list)
+            if manufacturer:
+                model = find_model(car, model_list)
+                if model:
+                    similar_cars_clean[key.replace(",", "_")].add(
+                        manufacturer + "_" + model
+                    )
+    return dict(similar_cars_clean)
