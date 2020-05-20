@@ -70,7 +70,9 @@ def fit_lin_regression(
     return "Regression fit and saved successfully"
 
 
-def predict_price(manufacturer: str, model: str, year: float, odometer: float):
+def predict_price(
+    manufacturer: str, model: str, year: float, odometer: float, from_nb: bool = False,
+):
     """
     Given a car from a certain year and mileage this returns the typical (according
     to linear regression) value it would be listed for on Craigslist
@@ -78,6 +80,7 @@ def predict_price(manufacturer: str, model: str, year: float, odometer: float):
     :param manufacturer: manufacturer of the vehicle
     :param model: model of the vechicle
     :param year: year of manufacture of the vehicle
+    :param from_nb: boolean whether the function call is in a notebook
     :return: predicited price of the vechicle according to the data, however,
     if not enough data return -1, if regression fails -2, 
     """
@@ -86,7 +89,10 @@ def predict_price(manufacturer: str, model: str, year: float, odometer: float):
     manufacturer, model, year, odometer = clean_input(
         manufacturer, model, year, odometer
     )
-    model_file = Path(f"models/{manufacturer}_{model}_{year}.pkl")
+    if from_nb:
+        model_file = Path(f"../models/{manufacturer}_{model}_{year}.pkl")
+    else:
+        model_file = Path(f"models/{manufacturer}_{model}_{year}.pkl")
     assert path.isfile(model_file), "No regression model for this car from that year"
 
     # Load the linear regression and make the prediction
