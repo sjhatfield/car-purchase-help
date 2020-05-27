@@ -34,7 +34,7 @@ def get_similar_advice(manufacturer: str, model: str, year: int, odometer: int) 
         try:
             price, _ = predict_price(car_manu, car_model, year, odometer)
             mileage_advice = predict_mileage_cost(car_manu, car_model, year)
-            ret_str += f"A <b>{car_manu.title()}</b>, <b>{car_model.title()}</b>, would cost approximately ${round(price, 2)}. {mileage_advice}<br/>"
+            ret_str += f"<b>{car_manu.title()}</b>, <b>{car_model.title()}</b>: would cost approximately ${round(price, 2)}. {mileage_advice}<br/>"
         except:
             pass
     return ret_str
